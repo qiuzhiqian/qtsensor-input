@@ -100,13 +100,12 @@ void InputAccelerometer::start()
     if (fd == -1) {
         qFatal("Failed to open input device");
     }
-    qDebug() << "fd=" << fd;
+    
     QSocketNotifier *m_notifier = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(m_notifier, &QSocketNotifier::activated, [=](){
         struct input_event event;
         if (::read(fd, &event, sizeof(struct input_event)) == sizeof(struct input_event)) {
             if (event.type == EV_ABS) {
-                qDebug() << "code=" << event.code << " value=" << event.value;
                 switch (event.code) {
                     case EVENT_TYPE_ACCEL_X: {
                         m_reading.setTimestamp(produceTimestamp());

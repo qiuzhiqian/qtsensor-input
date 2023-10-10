@@ -1,11 +1,11 @@
 #include <QtCore>
-#include "manager.h"
+#include "accelerometer.h"
 
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
 
-    SensorManager manager;
+    AccelerometerAdaptor accel_adapter;
 
     return app.exec();
 }
