@@ -2,6 +2,11 @@
 这是一个基于input子系统驱动的qtsensor工程，主要实现了qtsensor对接input sensor的插件，是的上层能够直接使用qtsensor来访问底层sensor.
 
 ## 编译
+先安装一下编译相关的依赖“
+```
+sudo apt install qtbase5-dev libqt5sensors5-dev
+```
+然后执行如下流程进行编译：
 ```
 $ mkdir build
 $ cd build

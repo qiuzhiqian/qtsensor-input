@@ -55,7 +55,7 @@ class InputSensorPlugin : public QObject, public QSensorPluginInterface, public 
 public:
     void registerSensors() override
     {
-        QString path = QString::fromLatin1(qgetenv("QT_ACCEL_FILEPATH"));
+        QString path = QString::fromLatin1(qgetenv("QT_ACCEL_INPUT_PATH"));
         if (!path.isEmpty() && !QSensorManager::isBackendRegistered(QAccelerometer::type, InputAccelerometer::id))
             QSensorManager::registerBackend(QAccelerometer::type, InputAccelerometer::id, this);
     }

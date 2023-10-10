@@ -95,7 +95,7 @@ void InputAccelerometer::start()
     result = ioctl(fd, GSENSOR_IOCTL_GET_CALIBRATION, &accel_offset);
     close(fd);
 
-    QByteArray path = qgetenv("QT_ACCEL_FILEPATH");
+    QByteArray path = qgetenv("QT_ACCEL_INPUT_PATH");
     fd = open(path.data(), O_RDONLY);
     if (fd == -1) {
         qFatal("Failed to open input device");
