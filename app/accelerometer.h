@@ -19,7 +19,7 @@ public:
     AccelerometerAdaptor(QObject *parent=nullptr);
 private:
     QAccelerometer* m_sensor;
-    ORIENTATION m_orient;
+    ORIENTATION m_orient = ORIENTATION::UNKNOWN;
 
 public slots:
     void onReadVal();
