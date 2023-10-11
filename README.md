@@ -21,9 +21,8 @@ $ make
 
 ## 运行
 ```
-# QT_ACCEL_INPUT_PATH=/dev/input/event2 ./sensor-app
+# QT_LIGHT_INPUT_PATH=/dev/input/event1 QT_ACCEL_INPUT_PATH=/dev/input/event2 sensor-app
 start...
-fd= 6
 code= 0  value= -80
 onReadVal x= -80 y= 0 z= 0
 code= 1  value= -352

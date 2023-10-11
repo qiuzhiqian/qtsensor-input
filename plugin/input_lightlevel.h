@@ -37,46 +37,42 @@
 **
 ****************************************************************************/
 
-#include "input_accelerometer.h"
-#include "input_lightlevel.h"
+#pragma once
 
-#include <QSensorPluginInterface>
-#include <QSensorBackendFactory>
 #include <QSensorBackend>
-#include <QSensorManager>
-
+#include <QLightReading>
+#include <QLightSensor>
 #include <QtCore/QFile>
-#include <QtCore/QDebug>
+#include <QSocketNotifier>
 
-class InputSensorPlugin : public QObject, public QSensorPluginInterface, public QSensorBackendFactory
+#include <linux/ioctl.h>
+
+#define LIGHT_SENSOR_IOCTL_MAGIC            'l'
+#define LIGHT_SENSOR_IOCTL_SET_RATE        _IOW(LIGHT_SENSOR_IOCTL_MAGIC, 3, int *)
+#define LIGHT_SENSOR_IOCTL_ENABLE          _IOW(LIGHT_SENSOR_IOCTL_MAGIC, 2, int *)
+#define LIGHT_SENSOR_IOCTL_GET_ENABLE      _IOR(LIGHT_SENSOR_IOCTL_MAGIC, 1, int *)
+
+class InputLightlevel : public QSensorBackend
 {
-    Q_OBJECT
-    Q_PLUGIN_METADATA(IID "com.qt-project.Qt.QSensorPluginInterface/1.0" FILE "plugin.json")
-    Q_INTERFACES(QSensorPluginInterface)
 public:
-    void registerSensors() override
-    {
-        QString accle_path = QString::fromLatin1(qgetenv("QT_ACCEL_INPUT_PATH"));
-        if (!accle_path.isEmpty() && !QSensorManager::isBackendRegistered(QAccelerometer::type, InputAccelerometer::id))
-            QSensorManager::registerBackend(QAccelerometer::type, InputAccelerometer::id, this);
+    static char const * const id;
 
-        QString light_path = QString::fromLatin1(qgetenv("QT_LIGHT_INPUT_PATH"));
+    InputLightlevel(QSensor *sensor);
+    ~InputLightlevel();
 
-        if (!light_path.isEmpty() && !QSensorManager::isBackendRegistered(QLightSensor::type, InputLightlevel::id))
-            QSensorManager::registerBackend(QLightSensor::type, InputLightlevel::id, this);
-    }
+    void start() override;
+    void stop() override;
+    void poll();
+    void timerEvent(QTimerEvent * /*event*/) override;
 
-    QSensorBackend *createBackend(QSensor *sensor) override
-    {
-        QByteArray id = sensor->identifier();
-        if (id== InputAccelerometer::id) {
-            return new InputAccelerometer(sensor);
-        } else if(id == InputLightlevel::id) {
-            return new InputLightlevel(sensor);
-        }
-        
-        return nullptr;
-    }
+private:
+    QLightReading   m_reading;
+    QSocketNotifier *m_notifier;
+    int m_timerid;
+
+    QString path;
+    QFile file;
+
+    qreal m_lux = 0;
+
 };
-
-#include "main.moc"

@@ -10,7 +10,7 @@ void RotateScreen(ORIENTATION orient);
 
 AccelerometerAdaptor::AccelerometerAdaptor(QObject *parent) :QObject(parent),m_sensor(new QAccelerometer(this)){
     connect(m_sensor, SIGNAL(readingChanged()), this, SLOT(onReadVal()));
-    qDebug() << "start...";
+    qDebug() << "accelerometer start...";
     m_sensor->start();
 }
 
