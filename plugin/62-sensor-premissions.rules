@@ -1,0 +1,4 @@
+ATTRS{name}=="lightsensor-level", SUBSYSTEM=="input", MODE="0755"
+ATTRS{name}=="gsensor", SUBSYSTEM=="input", MODE="0755"
+KERNEL=="mma8452_daemon", SUBSYSTEM=="misc", MODE="0755"
+KERNEL=="lightsensor", SUBSYSTEM=="misc", MODE="0755"

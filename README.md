@@ -44,3 +44,15 @@ onReadVal x= -64 y= -352 z= 16736
 code= 1  value= -384
 onReadVal x= -64 y= -384 z= 16736
 ```
+
+## 相关节点信息
+```
+# /dev/input/event2
+/devices/platform/ff3d0000.i2c/i2c-4/4-001d/input/input2/event2
+
+# /dev/mma8452_daemon
+/devices/platform/ff3d0000.i2c/i2c-4/4-001d/misc/mma8452_daemon
+
+# /dev/lightsensor
+/devices/platform/ff140000.i2c/i2c-5/5-0053/misc/lightsensor
+```

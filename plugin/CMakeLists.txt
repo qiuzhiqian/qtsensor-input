@@ -9,4 +9,7 @@ include_directories(./)
 add_library(${PROJECT_NAME} SHARED main.cpp input_accelerometer.cpp input_lightlevel.cpp)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Sensors)
-install(TARGETS ${PROJECT_NAME} LIBRARY NAMELINK_SKIP DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/sensors/)
+install(TARGETS ${PROJECT_NAME} LIBRARY NAMELINK_SKIP 
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/sensors/)
+install(FILES 62-sensor-premissions.rules
+        DESTINATION /etc/udev/rules.d)
