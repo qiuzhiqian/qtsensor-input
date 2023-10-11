@@ -77,7 +77,6 @@ quint64 produceTimestamp1()
 InputLightlevel::InputLightlevel(QSensor *sensor)
     : QSensorBackend(sensor)
     , m_timerid(0)
-    , path(QString())
 {
     setReading<QLightReading>(&m_reading);
     //addDataRate(-32768, 32768); // 100Hz

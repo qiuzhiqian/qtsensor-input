@@ -69,10 +69,4 @@ private:
     QLightReading   m_reading;
     QSocketNotifier *m_notifier;
     int m_timerid;
-
-    QString path;
-    QFile file;
-
-    qreal m_lux = 0;
-
 };

@@ -76,7 +76,6 @@ quint64 produceTimestamp()
 InputAccelerometer::InputAccelerometer(QSensor *sensor)
     : QSensorBackend(sensor)
     , m_timerid(0)
-    , path(QString())
 {
     setReading<QAccelerometerReading>(&m_reading);
     addDataRate(-32768, 32768); // 100Hz
@@ -110,21 +109,30 @@ void InputAccelerometer::start()
                     case EVENT_TYPE_ACCEL_X: {
                         m_reading.setTimestamp(produceTimestamp());
                         m_reading.setX(event.value - accel_offset[0]);
-                        newReadingAvailable();
+                        valid_flag |= 0x01;
+                        if(valid_flag>= 0x07) {
+                            newReadingAvailable();
+                        }
                         break;
                     }
                     case EVENT_TYPE_ACCEL_Y:
                     {
                         m_reading.setTimestamp(produceTimestamp());
                         m_reading.setY(event.value - accel_offset[1]);
-                        newReadingAvailable();
+                        valid_flag |= 0x02;
+                        if(valid_flag>= 0x07) {
+                            newReadingAvailable();
+                        }
                         break;
                     }
                     case EVENT_TYPE_ACCEL_Z:
                     {
                         m_reading.setTimestamp(produceTimestamp());
                         m_reading.setZ(event.value - accel_offset[2]);
-                        newReadingAvailable();
+                        valid_flag |= 0x04;
+                        if(valid_flag>= 0x07) {
+                            newReadingAvailable();
+                        }
                         break;
                     }
                 }

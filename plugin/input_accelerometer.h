@@ -75,12 +75,7 @@ private:
     QSocketNotifier *m_notifier;
     int m_timerid;
 
-    QString path;
-    QFile file;
-
-    qreal m_x = 0;
-    qreal m_y = 0;
-    qreal m_z = 0;
+    quint8 valid_flag = 0x00;
 
     int accel_offset[3];
 };

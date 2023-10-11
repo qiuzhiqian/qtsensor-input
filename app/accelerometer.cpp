@@ -20,28 +20,9 @@ void AccelerometerAdaptor::onReadVal() {
     qreal z = m_sensor->reading()->z();
     //qDebug() << "onReadVal x=" << x << "y=" << y << "z=" << z;
     ORIENTATION orient = orientation_calc(x, y, z);
-    if(orient != this->m_orient) {
-        //switch(orientation_calc(x, y, z)) {
-        //case ORIENTATION::R_0:
-        //    qDebug() << "Rotate 0 degrees";
-        //    break;
-        //case ORIENTATION::R_90:
-        //    qDebug() << "Rotate 90 degrees";
-        //    break;
-        //case ORIENTATION::R_180:
-        //    qDebug() << "Rotate 180 degrees";
-        //    break;
-        //case ORIENTATION::R_270:
-        //    qDebug() << "Rotate 270 degrees";
-        //    break;
-        //default:
-        //    qDebug() << "unknown degrees";
-        //    break;
-        //}
-        RotateScreen(orientation_calc(x, y, z));
-        if(orient != ORIENTATION::UNKNOWN) {
-            this->m_orient = orient;
-        }
+    if(orient != this->m_orient && orient != ORIENTATION::UNKNOWN) {
+        RotateScreen(orient);
+        this->m_orient = orient;
     }
 }
 
