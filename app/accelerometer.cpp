@@ -39,7 +39,9 @@ void AccelerometerAdaptor::onReadVal() {
         //    break;
         //}
         RotateScreen(orientation_calc(x, y, z));
-        this->m_orient = orient;
+        if(orient != ORIENTATION::UNKNOWN) {
+            this->m_orient = orient;
+        }
     }
 }
 
@@ -68,30 +70,35 @@ ORIENTATION orientation_calc(qreal x,qreal y,qreal z) {
 }
 
 void RotateScreen(ORIENTATION orient) {
+    int val = 0;
+    switch (orient) {
+    case ORIENTATION::R_0:
+        qDebug() << "Rotate 0 degrees";
+        val= 1;
+        break;
+    case ORIENTATION::R_90:
+        qDebug() << "Rotate 90 degrees";
+        val = 2;
+        break;
+    case ORIENTATION::R_180:
+        qDebug() << "Rotate 180 degrees";
+        val = 4;
+        break;
+    case ORIENTATION::R_270:
+        qDebug() << "Rotate 270 degrees";
+        val = 8;
+        break;
+    default:
+        //qDebug() << "unknown degrees";
+        return;
+    }
+
     QDBusInterface interface("com.deepin.daemon.Display", "/com/deepin/daemon/Display/Monitor_1",
                                  "com.deepin.daemon.Display.Monitor",
                                  QDBusConnection::sessionBus());
     if (!interface.isValid()) {
         qDebug() << qPrintable(QDBusConnection::sessionBus().lastError().message());
         exit(1);
-    }
-
-    int val = 0;
-    switch (orient) {
-    case ORIENTATION::R_0:
-        val= 1;
-        break;
-    case ORIENTATION::R_90:
-        val = 2;
-        break;
-    case ORIENTATION::R_180:
-        val = 4;
-        break;
-    case ORIENTATION::R_270:
-        val = 8;
-        break;
-    default:
-        break;
     }
 
     interface.asyncCall(QLatin1String("SetRotation"), val);
