@@ -1,7 +1,7 @@
 Source: qtsensor-input
 Priority: optional
 Maintainer: xml <xiamengliang@gmail.com>
-Build-Depends: debhelper (>= 11), qtbase5-dev, libqt5sensors5-dev
+Build-Depends: debhelper (>= 11), qtbase5-dev, libqt5sensors5-dev, libgsettings-qt-dev
 Standards-Version: 4.1.3
 Section: libs
 Homepage: <https://github.com/qiuzhiqian>
@@ -19,6 +19,7 @@ Description: <insert up to 60 chars description>
 Package: sensor-daemon
 Architecture: any
 Multi-Arch: same
-Depends: ${shlibs:Depends}, ${misc:Depends}, qtsensor-input (= ${binary:Version}), libqt5core5a, libqt5dbus5
+Depends: ${shlibs:Depends}, ${misc:Depends}, qtsensor-input (= ${binary:Version}), 
+  libqt5core5a, libqt5dbus5, libgsettings-qt1
 Description: <insert up to 60 chars description>
  <insert long description, indented with spaces>

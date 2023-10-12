@@ -47,6 +47,7 @@
 
 #include <QtCore/QStringList>
 
+#include <cstddef>
 #include <time.h>
 #include <errno.h>
 #include <sys/ioctl.h>
@@ -88,6 +89,11 @@ InputAccelerometer::~InputAccelerometer()
 
 void InputAccelerometer::start()
 {
+    if(m_notifier) {
+        return;
+    }
+
+    qDebug() << "open gsensor...";
     int fd = -1;
     fd = open("/dev/mma8452_daemon", O_RDONLY);
     int result = ioctl(fd, GSENSOR_IOCTL_START);
@@ -100,7 +106,7 @@ void InputAccelerometer::start()
         qFatal("Failed to open input device");
     }
     
-    QSocketNotifier *m_notifier = new QSocketNotifier(fd, QSocketNotifier::Read);
+    m_notifier = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(m_notifier, &QSocketNotifier::activated, [=](){
         struct input_event event;
         if (::read(fd, &event, sizeof(struct input_event)) == sizeof(struct input_event)) {
@@ -148,6 +154,21 @@ void InputAccelerometer::stop()
         killTimer(m_timerid);
         m_timerid = 0;
     }
+
+    if(m_notifier) {
+        m_notifier->setEnabled(false);
+        m_notifier->disconnect(SIGNAL(activated(QSocketDescriptor, QSocketNotifier::Type)));
+        m_notifier->deleteLater();
+        m_notifier = nullptr;
+    }
+
+    qDebug() << "close gsensor...";
+    int fd = -1;
+    fd = open("/dev/mma8452_daemon", O_RDONLY);
+    qDebug() << "fd="<< fd;
+    int result = ioctl(fd, GSENSOR_IOCTL_CLOSE);
+    qDebug() << "result="<< result;
+    close(fd);
 }
 
 void InputAccelerometer::poll()

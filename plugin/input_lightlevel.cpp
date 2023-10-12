@@ -102,7 +102,7 @@ void InputLightlevel::start()
         qFatal("Failed to open input device");
     }
     qDebug() << "fd=" << fd;
-    QSocketNotifier *m_notifier = new QSocketNotifier(fd, QSocketNotifier::Read);
+    m_notifier = new QSocketNotifier(fd, QSocketNotifier::Read);
     connect(m_notifier, &QSocketNotifier::activated, [=](){
         struct input_event event;
         if (::read(fd, &event, sizeof(struct input_event)) == sizeof(struct input_event)) {
@@ -126,6 +126,12 @@ void InputLightlevel::stop()
     if (m_timerid) {
         killTimer(m_timerid);
         m_timerid = 0;
+    }
+
+    if(m_notifier) {
+        m_notifier->setEnabled(false);
+        m_notifier->disconnect(SIGNAL(activated(QSocketDescriptor, QSocketNotifier::Type)));
+        m_notifier->deleteLater();
     }
 }
 

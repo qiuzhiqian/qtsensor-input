@@ -11,7 +11,38 @@ void RotateScreen(ORIENTATION orient);
 AccelerometerAdaptor::AccelerometerAdaptor(QObject *parent) :QObject(parent),m_sensor(new QAccelerometer(this)){
     connect(m_sensor, SIGNAL(readingChanged()), this, SLOT(onReadVal()));
     qDebug() << "accelerometer start...";
-    m_sensor->start();
+
+    if (QGSettings::isSchemaInstalled("com.deepin.due.shell")) {
+        m_gsettings = new QGSettings("com.deepin.due.shell");
+
+        //监听key的value是否发生了变化
+        connect(m_gsettings, &QGSettings::changed, this, [=] (const QString &key) {
+            if (key == "rotationislock") {
+                if(m_gsettings->get("rotationislock").toBool()) {
+                    m_sensor->start();
+                } else {
+                    m_sensor->stop();
+                }
+            }
+        });
+
+        const bool value = m_gsettings->get("rotationislock").toBool();
+        if(value) {
+            m_sensor->start();
+        } else {
+            m_sensor->stop();
+        }
+    }
+}
+
+AccelerometerAdaptor::~AccelerometerAdaptor() {
+    qDebug() << "accelerometer stop...";
+    if(m_sensor) {
+        m_sensor->stop();
+        m_sensor->disconnect(SIGNAL(readingChanged()));
+        m_sensor->deleteLater();
+        m_sensor = nullptr;
+    }
 }
 
 void AccelerometerAdaptor::onReadVal() {

@@ -10,7 +10,6 @@ LightAdaptor::LightAdaptor(QObject *parent) :QObject(parent),m_sensor(new QLight
 
 void LightAdaptor::onReadVal() {
     qreal lux = m_sensor->reading()->lux();
-    qDebug() << "onReadVal lux=" << lux;
 }
 
 
