@@ -59,7 +59,7 @@ void RotateScreen(ORIENTATION orient) {
         break;
     case ORIENTATION::R_90:
         qDebug() << "Rotate 90 degrees";
-        val = 2;
+        val = 8;
         break;
     case ORIENTATION::R_180:
         qDebug() << "Rotate 180 degrees";
@@ -67,20 +67,31 @@ void RotateScreen(ORIENTATION orient) {
         break;
     case ORIENTATION::R_270:
         qDebug() << "Rotate 270 degrees";
-        val = 8;
+        val = 2;
         break;
     default:
         //qDebug() << "unknown degrees";
         return;
     }
 
-    QDBusInterface interface("com.deepin.daemon.Display", "/com/deepin/daemon/Display/Monitor_1",
+    QDBusInterface monitor_ifc("com.deepin.daemon.Display", "/com/deepin/daemon/Display/Monitor_1",
                                  "com.deepin.daemon.Display.Monitor",
                                  QDBusConnection::sessionBus());
-    if (!interface.isValid()) {
+    if (!monitor_ifc.isValid()) {
         qDebug() << qPrintable(QDBusConnection::sessionBus().lastError().message());
         exit(1);
     }
 
-    interface.asyncCall(QLatin1String("SetRotation"), val);
+    //QDBusPendingCall reply = interface.asyncCall(QLatin1String("SetRotation"), val);
+    QDBusMessage reply = monitor_ifc.call(QLatin1String("SetRotation"), val);
+
+    QDBusInterface display_ifc("com.deepin.daemon.Display", "/com/deepin/daemon/Display",
+                                 "com.deepin.daemon.Display",
+                                 QDBusConnection::sessionBus());
+    if (!display_ifc.isValid()) {
+        qDebug() << qPrintable(QDBusConnection::sessionBus().lastError().message());
+        exit(1);
+    }
+    reply = display_ifc.call(QLatin1String("ApplyChanges"));
+    reply = display_ifc.call(QLatin1String("Save"));
 }
