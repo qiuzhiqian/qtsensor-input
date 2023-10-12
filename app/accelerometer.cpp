@@ -22,15 +22,16 @@ AccelerometerAdaptor::AccelerometerAdaptor(QObject *parent) :QObject(parent),m_s
                     m_sensor->start();
                 } else {
                     m_sensor->stop();
+                    m_orient = ORIENTATION::UNKNOWN;
                 }
             }
         });
 
-        const bool value = m_gsettings->get("rotationislock").toBool();
-        if(value) {
+        if(m_gsettings->get("rotationislock").toBool()) {
             m_sensor->start();
         } else {
             m_sensor->stop();
+            m_orient = ORIENTATION::UNKNOWN;
         }
     }
 }
@@ -113,16 +114,16 @@ void RotateScreen(ORIENTATION orient) {
         exit(1);
     }
 
-    //QDBusPendingCall reply = interface.asyncCall(QLatin1String("SetRotation"), val);
-    QDBusMessage reply = monitor_ifc.call(QLatin1String("SetRotation"), val);
-
-    QDBusInterface display_ifc("com.deepin.daemon.Display", "/com/deepin/daemon/Display",
-                                 "com.deepin.daemon.Display",
-                                 QDBusConnection::sessionBus());
-    if (!display_ifc.isValid()) {
-        qDebug() << qPrintable(QDBusConnection::sessionBus().lastError().message());
-        exit(1);
+    if(monitor_ifc.property("Rotation").toInt() != val) {
+        QDBusMessage reply = monitor_ifc.call(QLatin1String("SetRotation"), val);
+        QDBusInterface display_ifc("com.deepin.daemon.Display", "/com/deepin/daemon/Display",
+                                    "com.deepin.daemon.Display",
+                                    QDBusConnection::sessionBus());
+        if (!display_ifc.isValid()) {
+            qDebug() << qPrintable(QDBusConnection::sessionBus().lastError().message());
+            exit(1);
+        }
+        reply = display_ifc.call(QLatin1String("ApplyChanges"));
+        reply = display_ifc.call(QLatin1String("Save"));
     }
-    reply = display_ifc.call(QLatin1String("ApplyChanges"));
-    reply = display_ifc.call(QLatin1String("Save"));
 }
