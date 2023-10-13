@@ -4,6 +4,7 @@
 #include <QAccelerometer>
 
 #include <QGSettings>
+#include <QDBusServiceWatcher>
 
 #define OFFSET 5
 
@@ -24,6 +25,11 @@ private:
     QAccelerometer* m_sensor;
     ORIENTATION m_orient = ORIENTATION::UNKNOWN;
     QGSettings* m_gsettings = nullptr;
+
+    QDBusServiceWatcher* m_watcher = nullptr;
+
+    void start();
+    void stop();
 
 public slots:
     void onReadVal();

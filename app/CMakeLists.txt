@@ -14,3 +14,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core Qt5::Sensors Qt5::DBus P
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION "bin"
 )
+install(FILES sensor-daemon.service
+        DESTINATION lib/systemd/user)

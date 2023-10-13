@@ -1,0 +1,13 @@
+[Unit]
+Description=Sensor daemon Service
+After=dbus.service
+
+[Service]
+Type = simple
+Environment = "QT_LIGHT_INPUT_PATH=/dev/input/event1"
+Environment = "QT_ACCEL_INPUT_PATH=/dev/input/event2"
+ExecStart = /usr/bin/sensor-app
+Restart=always
+
+[Install]
+WantedBy=default.target

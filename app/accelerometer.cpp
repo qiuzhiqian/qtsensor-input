@@ -4,35 +4,27 @@
 
 #include <QDBusConnection>
 #include <QDBusInterface>
+#include <QDBusReply>
 
 ORIENTATION orientation_calc(qreal x,qreal y,qreal z);
 void RotateScreen(ORIENTATION orient);
+bool service_active(const QString& name);
 
 AccelerometerAdaptor::AccelerometerAdaptor(QObject *parent) :QObject(parent),m_sensor(new QAccelerometer(this)){
-    connect(m_sensor, SIGNAL(readingChanged()), this, SLOT(onReadVal()));
-    qDebug() << "accelerometer start...";
-
-    if (QGSettings::isSchemaInstalled("com.deepin.due.shell")) {
-        m_gsettings = new QGSettings("com.deepin.due.shell");
-
-        //监听key的value是否发生了变化
-        connect(m_gsettings, &QGSettings::changed, this, [=] (const QString &key) {
-            if (key == "rotationislock") {
-                if(m_gsettings->get("rotationislock").toBool()) {
-                    m_sensor->start();
-                } else {
-                    m_sensor->stop();
-                    m_orient = ORIENTATION::UNKNOWN;
-                }
+    if(!service_active("com.deepin.daemon.Display")) {
+        m_watcher = new QDBusServiceWatcher("com.deepin.daemon.Display", QDBusConnection::sessionBus(), 
+            QDBusServiceWatcher::WatchForRegistration);
+        connect(m_watcher, &QDBusServiceWatcher::serviceRegistered, [=](const QString &serviceName) {
+            if(serviceName == "com.deepin.daemon.Display") {
+                qDebug() << "has wait display active...";
+                start();
+                m_watcher->deleteLater();
+                m_watcher = nullptr;
             }
         });
-
-        if(m_gsettings->get("rotationislock").toBool()) {
-            m_sensor->start();
-        } else {
-            m_sensor->stop();
-            m_orient = ORIENTATION::UNKNOWN;
-        }
+    } else {
+        qDebug() << "display actived...";
+        start();
     }
 }
 
@@ -44,6 +36,47 @@ AccelerometerAdaptor::~AccelerometerAdaptor() {
         m_sensor->deleteLater();
         m_sensor = nullptr;
     }
+}
+
+void AccelerometerAdaptor::start() {
+    qDebug() << "accelerometer start...";
+    if (QGSettings::isSchemaInstalled("com.deepin.due.shell")) {
+        m_gsettings = new QGSettings("com.deepin.due.shell");
+
+        //监听key的value是否发生了变化
+        connect(m_gsettings, &QGSettings::changed, this, [=] (const QString &key) {
+            if (key == "rotationislock") {
+                if(m_gsettings->get("rotationislock").toBool()) {
+                    m_sensor->start();
+                } else {
+                    qDebug() << "do rotationislock stop...";
+                    m_sensor->stop();
+                    m_orient = ORIENTATION::UNKNOWN;
+                }
+            }
+        });
+
+        if(m_gsettings->get("rotationislock").toBool()) {
+            qDebug() << "do sensor start...";
+            m_sensor->start();
+        } else {
+            m_sensor->stop();
+            m_orient = ORIENTATION::UNKNOWN;
+        }
+    }
+    connect(m_sensor, SIGNAL(readingChanged()), this, SLOT(onReadVal()));
+}
+
+void AccelerometerAdaptor::stop() {
+    if(m_gsettings) {
+        m_gsettings->disconnect(SIGNAL(changed(const QString &key)));
+        m_gsettings->deleteLater();
+        m_gsettings = nullptr;
+    }
+
+    m_sensor->stop();
+    m_orient = ORIENTATION::UNKNOWN;
+    m_sensor->disconnect(SIGNAL(readingChanged()));
 }
 
 void AccelerometerAdaptor::onReadVal() {
@@ -115,7 +148,7 @@ void RotateScreen(ORIENTATION orient) {
     }
 
     if(monitor_ifc.property("Rotation").toInt() != val) {
-        QDBusMessage reply = monitor_ifc.call(QLatin1String("SetRotation"), val);
+        monitor_ifc.call(QLatin1String("SetRotation"), val);
         QDBusInterface display_ifc("com.deepin.daemon.Display", "/com/deepin/daemon/Display",
                                     "com.deepin.daemon.Display",
                                     QDBusConnection::sessionBus());
@@ -123,7 +156,19 @@ void RotateScreen(ORIENTATION orient) {
             qDebug() << qPrintable(QDBusConnection::sessionBus().lastError().message());
             exit(1);
         }
-        reply = display_ifc.call(QLatin1String("ApplyChanges"));
-        reply = display_ifc.call(QLatin1String("Save"));
+        display_ifc.call(QLatin1String("ApplyChanges"));
+        display_ifc.call(QLatin1String("Save"));
     }
+}
+
+bool service_active(const QString& name) {
+    QDBusInterface dbus_ifc("org.freedesktop.DBus", "/org/freedesktop/DBus",
+                                 "org.freedesktop.DBus",
+                                 QDBusConnection::sessionBus());
+
+    QDBusReply<bool> reply = dbus_ifc.call(QLatin1String("NameHasOwner"), name);
+    if(reply.isValid()) {
+        return reply.value();
+    }
+    return false;
 }

@@ -77,5 +77,5 @@ private:
 
     quint8 valid_flag = 0x00;
 
-    int accel_offset[3];
+    int accel_offset[3] = {0};
 };
