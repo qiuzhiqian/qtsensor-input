@@ -45,8 +45,7 @@
 #include <QSensorBackend>
 #include <QSensorManager>
 
-#include <QtCore/QFile>
-#include <QtCore/QDebug>
+#include <QDebug>
 
 class InputSensorPlugin : public QObject, public QSensorPluginInterface, public QSensorBackendFactory
 {

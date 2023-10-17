@@ -1,4 +1,5 @@
 #include "accelerometer.h"
+#include "utils.h"
 #include <QDebug>
 #include <QtMath>
 
@@ -8,10 +9,9 @@
 
 ORIENTATION orientation_calc(qreal x,qreal y,qreal z);
 void RotateScreen(ORIENTATION orient);
-bool service_active(const QString& name);
 
 AccelerometerAdaptor::AccelerometerAdaptor(QObject *parent) :QObject(parent),m_sensor(new QAccelerometer(this)){
-    if(!service_active("com.deepin.daemon.Display")) {
+    if(!service_actived("com.deepin.daemon.Display")) {
         m_watcher = new QDBusServiceWatcher("com.deepin.daemon.Display", QDBusConnection::sessionBus(), 
             QDBusServiceWatcher::WatchForRegistration);
         connect(m_watcher, &QDBusServiceWatcher::serviceRegistered, [=](const QString &serviceName) {
@@ -159,16 +159,4 @@ void RotateScreen(ORIENTATION orient) {
         display_ifc.call(QLatin1String("ApplyChanges"));
         display_ifc.call(QLatin1String("Save"));
     }
-}
-
-bool service_active(const QString& name) {
-    QDBusInterface dbus_ifc("org.freedesktop.DBus", "/org/freedesktop/DBus",
-                                 "org.freedesktop.DBus",
-                                 QDBusConnection::sessionBus());
-
-    QDBusReply<bool> reply = dbus_ifc.call(QLatin1String("NameHasOwner"), name);
-    if(reply.isValid()) {
-        return reply.value();
-    }
-    return false;
 }

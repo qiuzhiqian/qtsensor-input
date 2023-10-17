@@ -1,5 +1,6 @@
 #include "light.h"
 #include "brightness.h"
+#include "utils.h"
 #include <QDebug>
 #include <QtMath>
 
@@ -9,10 +10,9 @@
 
 void DoBrightness(qreal val);
 qreal GetCurrentBrightness();
-bool service_active1(const QString& name);
 
 LightAdaptor::LightAdaptor(QObject *parent) :QObject(parent),m_sensor(new QLightSensor(this)){
-    if(!service_active1("com.deepin.daemon.Display")) {
+    if(!service_actived("com.deepin.daemon.Display")) {
         m_watcher = new QDBusServiceWatcher("com.deepin.daemon.Display", QDBusConnection::sessionBus(), 
             QDBusServiceWatcher::WatchForRegistration);
         connect(m_watcher, &QDBusServiceWatcher::serviceRegistered, [=](const QString &serviceName) {
@@ -209,16 +209,4 @@ qreal GetCurrentBrightness() {
 
     argument.endMap();
     return ret;
-}
-
-bool service_active1(const QString& name) {
-    QDBusInterface dbus_ifc("org.freedesktop.DBus", "/org/freedesktop/DBus",
-                                 "org.freedesktop.DBus",
-                                 QDBusConnection::sessionBus());
-
-    QDBusReply<bool> reply = dbus_ifc.call(QLatin1String("NameHasOwner"), name);
-    if(reply.isValid()) {
-        return reply.value();
-    }
-    return false;
 }

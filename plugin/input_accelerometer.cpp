@@ -38,17 +38,11 @@
 ****************************************************************************/
 
 #include "input_accelerometer.h"
-#include <QtCore/QDebug>
-#include <QtCore/QtGlobal>
-#include <QtCore/QFile>
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <QDebug>
+#include <QTimer>
 #include <QString>
 
-#include <QtCore/QStringList>
-
 #include <cstddef>
-#include <time.h>
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -56,23 +50,9 @@
 
 #include <linux/input.h>
 
+#include "utils.h"
+
 char const * const InputAccelerometer::id("input.accelerometer");
-
-quint64 produceTimestamp()
-{
-    struct timespec tv;
-    int ok;
-
-#ifdef CLOCK_MONOTONIC_RAW
-    ok = clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
-    if (ok != 0)
-#endif
-    ok = clock_gettime(CLOCK_MONOTONIC, &tv);
-    Q_ASSERT(ok == 0);
-
-    quint64 result = (tv.tv_sec * 1000000ULL) + (tv.tv_nsec * 0.001); // scale to microseconds
-    return result;
-}
 
 InputAccelerometer::InputAccelerometer(QSensor *sensor)
     : QSensorBackend(sensor)

@@ -42,7 +42,6 @@
 #include <QSensorBackend>
 #include <QLightReading>
 #include <QLightSensor>
-#include <QtCore/QFile>
 #include <QSocketNotifier>
 
 #include <linux/ioctl.h>

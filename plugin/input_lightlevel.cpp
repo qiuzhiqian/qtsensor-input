@@ -38,16 +38,10 @@
 ****************************************************************************/
 
 #include "input_lightlevel.h"
-#include <QtCore/QDebug>
-#include <QtCore/QtGlobal>
-#include <QtCore/QFile>
-#include <QtCore/QDebug>
-#include <QtCore/QTimer>
+#include <QDebug>
+#include <QTimer>
 #include <QString>
 
-#include <QtCore/QStringList>
-
-#include <time.h>
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
@@ -55,24 +49,9 @@
 
 #include <linux/input.h>
 
+#include "utils.h"
+
 char const * const InputLightlevel::id("input.lightlevel");
-
-
-quint64 produceTimestamp1()
-{
-    struct timespec tv;
-    int ok;
-
-#ifdef CLOCK_MONOTONIC_RAW
-    ok = clock_gettime(CLOCK_MONOTONIC_RAW, &tv);
-    if (ok != 0)
-#endif
-    ok = clock_gettime(CLOCK_MONOTONIC, &tv);
-    Q_ASSERT(ok == 0);
-
-    quint64 result = (tv.tv_sec * 1000000ULL) + (tv.tv_nsec * 0.001); // scale to microseconds
-    return result;
-}
 
 InputLightlevel::InputLightlevel(QSensor *sensor)
     : QSensorBackend(sensor)
@@ -109,7 +88,7 @@ void InputLightlevel::start()
             if (event.type == EV_ABS) {
                 switch (event.code) {
                     case ABS_MISC: {
-                        m_reading.setTimestamp(produceTimestamp1());
+                        m_reading.setTimestamp(produceTimestamp());
                         m_reading.setLux(event.value);
                         newReadingAvailable();
                         break;
@@ -137,7 +116,7 @@ void InputLightlevel::stop()
 
 void InputLightlevel::poll()
 {
-    m_reading.setTimestamp(produceTimestamp1());
+    m_reading.setTimestamp(produceTimestamp());
     m_reading.setLux(4.0);
     newReadingAvailable();
 }

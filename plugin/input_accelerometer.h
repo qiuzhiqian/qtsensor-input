@@ -42,7 +42,6 @@
 #include <QSensorBackend>
 #include <QAccelerometerReading>
 #include <QAccelerometer>
-#include <QtCore/QFile>
 #include <QSocketNotifier>
 
 #include <linux/ioctl.h>
