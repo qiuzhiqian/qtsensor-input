@@ -6,6 +6,9 @@
 #include <QTimer>
 #include "brightness.h"
 
+#include <QGSettings>
+#include <QDBusServiceWatcher>
+
 class LightAdaptor : public QObject {
     Q_OBJECT
 public:
@@ -25,6 +28,10 @@ private:
     QTimer m_brightness_ctl;
 
     BrightnessCtl *m_ctl;
+
+    QGSettings* m_gsettings = nullptr;
+
+    QDBusServiceWatcher* m_watcher = nullptr;
 
 public slots:
     void onReadVal();

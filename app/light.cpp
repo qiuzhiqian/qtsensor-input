@@ -9,25 +9,24 @@
 
 void DoBrightness(qreal val);
 qreal GetCurrentBrightness();
+bool service_active1(const QString& name);
 
 LightAdaptor::LightAdaptor(QObject *parent) :QObject(parent),m_sensor(new QLightSensor(this)){
-    connect(m_sensor, SIGNAL(readingChanged()), this, SLOT(onReadVal()));
-    qDebug() << "light start...";
-    m_sensor->start();
-    m_delay.setSingleShot(true);
-    m_delay.setInterval(2000);
-    connect(&m_delay, &QTimer::timeout, [=]() {
-        qDebug() << "brightness changed to " << m_next_val;
-        m_current_val = m_next_val;
-        m_delay.stop();
-
-        BrightnessControl(m_current_val);
-    });
-
-    m_ctl = new BrightnessCtl(0,0,0);
-    connect(m_ctl, &BrightnessCtl::actived, [=](qreal val) {
-        DoBrightness(val);
-    });
+    if(!service_active1("com.deepin.daemon.Display")) {
+        m_watcher = new QDBusServiceWatcher("com.deepin.daemon.Display", QDBusConnection::sessionBus(), 
+            QDBusServiceWatcher::WatchForRegistration);
+        connect(m_watcher, &QDBusServiceWatcher::serviceRegistered, [=](const QString &serviceName) {
+            if(serviceName == "com.deepin.daemon.Display") {
+                qDebug() << "has wait display active...";
+                start();
+                m_watcher->deleteLater();
+                m_watcher = nullptr;
+            }
+        });
+    } else {
+        qDebug() << "display actived...";
+        start();
+    }
 }
 
 void LightAdaptor::onReadVal() {
@@ -53,6 +52,68 @@ void LightAdaptor::onReadVal() {
         }
     } else {
         m_delay.stop();
+    }
+}
+
+void LightAdaptor::start() {
+    qDebug() << "light start...";
+    if (QGSettings::isSchemaInstalled("com.deepin.dte.settings")) {
+        m_gsettings = new QGSettings("com.deepin.dte.settings");
+
+        //监听key的value是否发生了变化
+        connect(m_gsettings, &QGSettings::changed, this, [=] (const QString &key) {
+            if (key == "auto-brightness") {
+                if(m_gsettings->get("auto-brightness").toBool()) {
+                    m_sensor->start();
+                } else {
+                    qDebug() << "do auto-brightness stop...";
+                    m_sensor->stop();
+                }
+            }
+        });
+
+        if(m_gsettings->get("auto-brightness").toBool()) {
+            qDebug() << "do sensor start...";
+            m_sensor->start();
+        } else {
+            m_sensor->stop();
+        }
+    }
+    connect(m_sensor, SIGNAL(readingChanged()), this, SLOT(onReadVal()));
+
+    m_delay.setSingleShot(true);
+    m_delay.setInterval(2000);
+    connect(&m_delay, &QTimer::timeout, [=]() {
+        qDebug() << "brightness changed to " << m_next_val;
+        m_current_val = m_next_val;
+        m_delay.stop();
+
+        BrightnessControl(m_current_val);
+    });
+
+    m_ctl = new BrightnessCtl(0,0,0);
+    connect(m_ctl, &BrightnessCtl::actived, [=](qreal val) {
+        DoBrightness(val);
+    });
+}
+
+void LightAdaptor::stop() {
+    if(m_gsettings) {
+        m_gsettings->disconnect(SIGNAL(changed(const QString &key)));
+        m_gsettings->deleteLater();
+        m_gsettings = nullptr;
+    }
+
+    m_sensor->stop();
+    m_sensor->disconnect(SIGNAL(readingChanged()));
+
+    m_delay.stop();
+    m_delay.disconnect(SIGNAL(timeout()));
+
+    if(m_ctl) {
+        m_ctl->stop();
+        m_ctl->disconnect(SIGNAL(actived(qreal val)));
+        m_ctl->deleteLater();
     }
 }
 
@@ -148,4 +209,16 @@ qreal GetCurrentBrightness() {
 
     argument.endMap();
     return ret;
+}
+
+bool service_active1(const QString& name) {
+    QDBusInterface dbus_ifc("org.freedesktop.DBus", "/org/freedesktop/DBus",
+                                 "org.freedesktop.DBus",
+                                 QDBusConnection::sessionBus());
+
+    QDBusReply<bool> reply = dbus_ifc.call(QLatin1String("NameHasOwner"), name);
+    if(reply.isValid()) {
+        return reply.value();
+    }
+    return false;
 }
