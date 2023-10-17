@@ -13,13 +13,13 @@ Section: libdevel
 Architecture: any
 Multi-Arch: same
 Depends: ${misc:Depends}, libqt5core5a
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Description: qtsensor-input is qtsensor input plugin
+ qtsensor-input is a sensor plugin for input driver
 
 Package: sensor-daemon
 Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends}, ${misc:Depends}, qtsensor-input (= ${binary:Version}), 
   libqt5core5a, libqt5dbus5, libgsettings-qt1
-Description: <insert up to 60 chars description>
- <insert long description, indented with spaces>
+Description: sensor-daemon is a service monitor sensor data change
+ sensor-daemon is a service which monitor sensor change.

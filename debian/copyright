@@ -3,8 +3,8 @@ Upstream-Name: qtsensor-input
 Source: <url://example.com>
 
 Files: *
-Copyright: <years> <put author's name and email here>
-           <years> <likewise for another author>
+Copyright: 2023 xiamengliang<xiamengliang@gmail.com>
+           
 License: LGPL-3.0+
 
 Files: debian/*
